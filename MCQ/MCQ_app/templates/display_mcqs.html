@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MCQs for {{ subject.name }}</title>
+</head>
+<body>
+  <h1>MCQs for {{ subject.name }}</h1>
+
+  <script>
+    const mcqs = [
+      {% for mcq in mcqs %}
+        {
+          id: {{ mcq.id }},
+          question_text: "{{ mcq.question_text }}",
+          option1: "{{ mcq.option1 }}",
+          option2: "{{ mcq.option2 }}",
+          option3: "{{ mcq.option3 }}",
+          option4: "{{ mcq.option4 }}"
+        },
+      {% endfor %}
+    ];
+
+    function submitAnswers() {
+      // Update the way we access mcqId
+      var score = 0;
+      const selectedOptions = {};
+      
+      mcqs.forEach(mcq => {
+        const selectedOption = document.querySelector(`input[name="mcq_${mcq.id}"]:checked`);
+        if (selectedOption) {
+          console.log(`MCQ ${mcq.id} - Selected option: ${selectedOption.value}`);
+          selectedOptions[mcq.id] = selectedOption.value;
+        }
+      });
+
+      if (Object.keys(selectedOptions).length === 0) {
+        alert('Please select at least one option.');
+        return;
+      }
+
+
+      // Convert selectedOptions to JSON and send via POST request
+      console.log({{subject.id}});
+      const subjectId = {{ subject.id }}; 
+      console.log(document.querySelector('input[name="csrfmiddlewaretoken"]').value);
+      const csrftoken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/submit_answers/');
+      xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+      xhr.setRequestHeader('X-CSRFToken', csrftoken);
+
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          
+          const score = document.getElementById('score');
+          const questions = document.getElementById('questions');
+          
+          const response = JSON.parse(xhr.responseText);
+          // location.reload();
+          alert('Your score is: ' + response.score);
+          
+          score.innerHTML = response.score;
+
+          questions.style.display = 'none';
+
+
+        } else {
+          alert('Error submitting answers.');
+        }
+      };
+
+      xhr.send(JSON.stringify({ selectedOptions: selectedOptions,subjectId:subjectId }));
+    }
+
+    
+  </script>
+
+  <!-- Rest of your HTML content -->
+  <div id="questions">
+  {% csrf_token %}
+  {% for mcq in mcqs %}
+   
+      <p>{{ mcq.question_text }}</p>
+      <ul>
+        <li><label><input type="radio" name="mcq_{{ mcq.id }}" value="1"> {{ mcq.option1 }}</label></li>
+        <li><label><input type="radio" name="mcq_{{ mcq.id }}" value="2"> {{ mcq.option2 }}</label></li>
+        <li><label><input type="radio" name="mcq_{{ mcq.id }}" value="3"> {{ mcq.option3 }}</label></li>
+        <li><label><input type="radio" name="mcq_{{ mcq.id }}" value="4"> {{ mcq.option4 }}</label></li>
+      </ul>
+   
+  {% endfor %}
+
+  <button onclick="submitAnswers()">Submit Answers</button>
+</div>
+
+
+  <div id="score">
+    <p></p>
+  </div>
+</body>
+</html>
