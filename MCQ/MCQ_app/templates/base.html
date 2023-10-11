@@ -16,17 +16,34 @@
             Hello {{request.user.first_name|default:request.user.username}}
         </li>
         <li>
-            <a href="{% url 'logout'%}">
+            <a href="{% url 'account:logout'%}">
                 Logout
             </a>
         </li>
+        <li>
+            <a href="{% url 'account:password_change'%}">Change-Password</a>
+        </li>
+        <li>
+            <a href="{% url 'account:edit' %}">Edit Profile</a>
+        </li>
         {% else %}
-            <a href="{% url 'login' %}">Log-in</a>
+            <a href="{% url 'account:login' %}">Log-in</a>
 
         {% endif %}
     </ul>
 </div>
+{% if messages %}
+    <p>Fuck</p>
+    <ul>
+        {% for message in messages %}
+            <li>
+                {{message|safe}}
+                <a href="#">x</a>
+            </li>
 
+        {% endfor %}
+    </ul>
+{% endif %}
 <div id="content">
     {% block content %}
     {% endblock %}

@@ -5,8 +5,8 @@
 <h1>Subjects</h1>
 <ul>
   {% for subject in subjects %}
-    <li>{{ subject.name }} - <a href="{% url 'create_mcq' subject.id %}">Add MCQ</a></li>
+    <li>{{ subject.name }} - <a href="{% url 'MCQ_app:create_mcq' subject.id %}">Add MCQ</a></li>
   {% endfor %}
 </ul>
-<a href="{% url 'create_subject' %}">Add Subject</a>
+<a href="{% url 'MCQ_app:create_subject' %}">Add Subject</a>
 {% endblock %}

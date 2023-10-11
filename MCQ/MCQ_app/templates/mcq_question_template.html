@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>MCQs for {{ subject.name }}</h1>
+{% if question %}
+    <h3>{{ question.question_text }}</h3>
+    <!-- Display question options and form for submitting user's answer -->
+    <!-- Adjust this based on your MCQQuestion model structure -->
+    <form method="post">
+        {% csrf_token %}
+        <ul>
+            <li><label><input type="radio" name="mcq_{{ mcq.id }}" value="1"> {{ question.option1 }}</label></li>
+            <li><label><input type="radio" name="mcq_{{ mcq.id }}" value="2"> {{ question.option2 }}</label></li>
+            <li><label><input type="radio" name="mcq_{{ mcq.id }}" value="3"> {{ question.option3 }}</label></li>
+            <li><label><input type="radio" name="mcq_{{ mcq.id }}" value="4"> {{ question.option4 }}</label></li>
+          </ul>
+        <button type="submit">Submit</button>
+    </form>
+    <hr>
+    <p>Question {{ current_question_index}}+1 of {{ total_questions }}</p>
+    <a href="{% url 'MCQ_app:next_question' subject_id %}">Next</a>
+{% else %}
+    <p>No more questions available.</p>
+{% endif %}
+
+{% endblock %}
