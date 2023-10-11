@@ -1,15 +1,12 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <title>Subject List</title>
-</head>
-<body>
-  <h1>Subjects</h1>
-  <ul>
-    {% for subject in subjects %}
-      <li>{{ subject.name }} - <a href="{% url 'create_mcq' subject.id %}">Add MCQ</a></li>
-    {% endfor %}
-  </ul>
-  <a href="{% url 'create_subject' %}">Add Subject</a>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Subjects</h1>
+<ul>
+  {% for subject in subjects %}
+    <li>{{ subject.name }} - <a href="{% url 'create_mcq' subject.id %}">Add MCQ</a></li>
+  {% endfor %}
+</ul>
+<a href="{% url 'create_subject' %}">Add Subject</a>
+{% endblock %}

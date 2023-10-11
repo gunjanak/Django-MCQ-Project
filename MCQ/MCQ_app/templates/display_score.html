@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Score for {{ subject.name }}</title>
-</head>
-<body>
-  <h1>Score for {{ subject.name }}</h1>
-  <h2>Your Score: {{ score }}</h2>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block content %}
+ 
+{% if score is not None %}
+<h2>Your Score: {{ score }}</h2>
+{% endif %}
+{% endblock %}

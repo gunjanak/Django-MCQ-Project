@@ -4,6 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.core import serializers
+from django.core.paginator import Paginator
 
 import json
 
@@ -38,54 +39,31 @@ def create_mcq(request, subject_id):
     return render(request, 'create_mcq.html', {'form': form})
 
 
-#following class works
-@method_decorator(csrf_exempt, name='dispatch')
-class SubmitAnswersView(View):
+def display_mcqs(request, subject_id):
+    subject = get_object_or_404(Subject, pk=subject_id)
+    mcqs = MCQQuestion.objects.filter(subject=subject)    
+    score = None
 
-    #the following function works
-    # def get(self,request,subject_id):
-    #     subject = get_object_or_404(Subject, pk=subject_id)
-    #     subject_data = serializers.serialize('json', [subject])
-    #     print(subject)
-    #     mcqs = MCQQuestion.objects.filter(subject=subject)
-    #     # mcqs = list(mcqs[:3])
-    #     # mcqs = list(mcqs)
-    #     print(mcqs)
+    if request.method == 'POST':
+        form_data = request.POST
+        print(form_data.values)
 
-    #     data = [{'mcqs': mcqs}]
-    #     return JsonResponse({'objects':data})
-    
-        # if request.method == 'POST':
-        #     print("fuck")
-        # return render(request, 'display_mcqs.html', {'subject': subject, 'mcqs': mcqs})
-
-    def get(self,request,subject_id):
-        subject = get_object_or_404(Subject, pk=subject_id)
-        mcqs = MCQQuestion.objects.filter(subject=subject)  
-        if request.method == 'POST':
-            print("fuck")
-        return render(request, 'display_mcqs.html', {'subject': subject, 'mcqs': mcqs})
-
-
-    def post(self, request):
-        print("Here i am **************************************")
-        data = json.loads(request.body.decode('utf-8'))
-        print(data)
-        selected_options = data.get('selectedOptions', {})
-        subject_id =  data.get('subjectId',{})
-
-        subject = get_object_or_404(Subject, pk=subject_id)
-        
-
-        mcqs = MCQQuestion.objects.filter(subject=subject)  
+        correct_ans = [mcq.correct_option for mcq in mcqs]
        
-        score = 0
-        for mcq in mcqs:
-            if str(selected_options.get(str(mcq.id))) == str(mcq.correct_option):
-                score += 1
+        # for mcq in mcqs:
+            
+        #     print(f"{mcq.id}:{mcq.correct_option} ")
+        #     correct_ans.append(mcq.correct_option)
 
-        response_data = {
-            'score': score,
-        }
-        
-        return JsonResponse(response_data)
+        all_values = [values for key,values in form_data.items() if key != 'csrfmiddlewaretoken']
+        # all_values = all_values[1:]
+        print(all_values) 
+        print(correct_ans)
+        # score = correct_answers
+        score = sum(1 for i, j in zip(all_values,correct_ans) if i == j)
+
+        print("Number of places with the same items:", score)
+        return render(request,'display_score.html',{'score':score})
+
+    return render(request, 'display_mcqs.html', {'subject': subject, 'mcqs': mcqs,'score': score})
+

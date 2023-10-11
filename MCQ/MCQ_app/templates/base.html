@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}My Website{% endblock %}</title>
+</head>
+<body>
+
+<div id="menu">
+    <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Contact</a></li>
+        <!-- Add more menu items as needed -->
+        {% if request.user.is_authenticated %}
+        <li>
+            Hello {{request.user.first_name|default:request.user.username}}
+        </li>
+        <li>
+            <a href="{% url 'logout'%}">
+                Logout
+            </a>
+        </li>
+        {% else %}
+            <a href="{% url 'login' %}">Log-in</a>
+
+        {% endif %}
+    </ul>
+</div>
+
+<div id="content">
+    {% block content %}
+    {% endblock %}
+</div>
+
+</body>
+</html>
