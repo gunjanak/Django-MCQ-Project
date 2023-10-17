@@ -9,12 +9,13 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 from django.contrib import messages
+from django.contrib.auth.models import User
 
 from json import dumps 
 import json
 
 from .models import Subject, MCQQuestion,UserScore
-from .forms import SubjectForm, MCQForm
+from .forms import SubjectForm, MCQForm,UserSubjectForm
 from .decorators import custom_permission_required
 
 def subject_list(request):
@@ -123,3 +124,27 @@ class SubjectList(ListView):
     model = Subject
     template_name = 'subject_list_user.html'  # Specify the template name
     context_object_name = 'subject_list'  # Specify the context variable name for the list of objects
+
+def display_all_Scores(request):
+    if request.method=='POST':
+        form = UserSubjectForm(request.POST)
+        if form.is_valid():
+            user = form.cleaned_data['user']
+            user = User.objects.get(username=user)
+            print("******************")
+            print(user.id)
+            subject = form.cleaned_data['subject']
+            subject = Subject.objects.get(name=subject)
+            print(subject.id)
+
+            print("*********************")
+            user_scores = UserScore.objects.filter(user=user.id,subject=subject.id)
+            return render(request,'scores.html',{'user_scores':user_scores})
+        
+    else:
+        form = UserSubjectForm()
+
+    return render(request,'user_subject_form.html',{'form':form})
+
+
+        

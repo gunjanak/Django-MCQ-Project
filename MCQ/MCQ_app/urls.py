@@ -12,6 +12,8 @@ urlpatterns = [
     path('mcq-list/<int:subject_id>/', views.mcq_list, name='mcq_list'),
     path("score-view/",views.score_view,name='score_view'),
     path("",SubjectList.as_view(),name="subject_list"),
+    path('get_scores/', views.display_all_Scores, name='display_all_Scores'),
+
 
   
 ]

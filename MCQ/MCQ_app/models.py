@@ -46,5 +46,7 @@ class UserScore(models.Model):
     subject = models.ForeignKey(Subject,on_delete=models.CASCADE)
     score = models.IntegerField()
 
-   
+
     
+
+
