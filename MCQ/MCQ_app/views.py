@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect,get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from django.views import View
+from django.views.generic import ListView
 from django.core import serializers
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required, permission_required
@@ -10,10 +10,10 @@ from django.urls import reverse
 from django.http import HttpResponseRedirect
 from django.contrib import messages
 
-
+from json import dumps 
 import json
 
-from .models import Subject, MCQQuestion
+from .models import Subject, MCQQuestion,UserScore
 from .forms import SubjectForm, MCQForm
 from .decorators import custom_permission_required
 
@@ -74,43 +74,52 @@ def display_mcqs(request, subject_id):
 
     return render(request, 'display_mcqs.html', {'subject': subject, 'mcqs': mcqs,'score': score})
 
-# def mcq_question_view(request,subject_id):
-#     subject = get_object_or_404(Subject,pk=subject_id)
-#     mcqs = MCQQuestion.objects.filter(subject=subject)
-#     total_questions = len(mcqs)
-#     print(total_questions)
-
-#     current_question_index = int(request.session.get('current_question_index',0))
-#     print(current_question_index)
-
-#     if current_question_index >= total_questions:
-#         current_question_index = 0
-#         return render(request, 'no_more_questions.html')  # Create this template for handling no more questions
-
-#     # Get the current question based on the index
-#     current_question = mcqs[current_question_index]
 
 
-#     # current_question = mcqs[current_question_index] if mcqs else None
-    
-#     context = {
-#         'question': current_question,
-#         'total_questions': total_questions,
-#         'current_question_index': current_question_index,
-#         'subject_id':subject_id,
-#     }
+@login_required
+def mcq_list(request,subject_id):
+    subject = get_object_or_404(Subject, pk=subject_id)
+    mcq_objects = MCQQuestion.objects.filter(subject=subject) 
+    mcq_list = []
 
-#     return render(request, 'mcq_question_template.html', context)
-    
-# def next_question(request,subject_id,):
-#     # Retrieve the current question index from the session
-#     current_question_index = int(request.session.get('current_question_index', 0))
-#     print(subject_id)
-#     # Increment the question index
-#     current_question_index += 1
-    
-#     # Update the session with the new question index
-#     request.session['current_question_index'] = current_question_index
-    
-#     # Redirect to the view to display the next question
-#     return redirect('MCQ_app:mcq_question_view', subject_id=subject_id)  # Replace 'your_subject' with the actual subject
+    for mcq in mcq_objects:
+        mcq_item = {
+            'question':mcq.question_text,
+            'options':[mcq.option1,mcq.option2,mcq.option3,mcq.option4],
+            'correct_answer':mcq.correct_option
+        }
+
+        mcq_list.append(mcq_item)
+
+    the_subject = [{"subject":subject.name}]
+    print(the_subject[0])
+    dataJSON = dumps(mcq_list) 
+    the_subject = dumps(the_subject)
+    print(type(dataJSON))
+    return render(request, 'mcq_list_2.html', {'data': dataJSON,'subject':the_subject}) 
+
+@login_required
+def score_view(request):
+    if request.method == 'POST':
+        post_data = json.loads(request.body)
+        print(post_data)
+        print(request.user)
+        value = post_data['value']
+        print(value)
+        print(post_data['subject'])
+        subject = get_object_or_404(Subject,name=post_data['subject'])
+        print(f"The subject is {subject}")
+        score_object = UserScore(user=request.user,
+                                 subject=subject,
+                                 score=post_data['value'])
+        score_object.save()
+       
+        # Process the value as needed
+        return JsonResponse({'message': 'Received value from JavaScript: {}'.format(value)})
+
+
+#list all the subjects
+class SubjectList(ListView):
+    model = Subject
+    template_name = 'subject_list_user.html'  # Specify the template name
+    context_object_name = 'subject_list'  # Specify the context variable name for the list of objects

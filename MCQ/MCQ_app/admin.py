@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Subject, MCQQuestion
+from .models import Subject, MCQQuestion, UserScore
 
 class MCQInline(admin.StackedInline):
     model = MCQQuestion
@@ -16,3 +16,5 @@ class MCQAdmin(admin.ModelAdmin):
 
 admin.site.register(Subject, SubjectAdmin)
 admin.site.register(MCQQuestion, MCQAdmin)
+
+admin.site.register(UserScore)

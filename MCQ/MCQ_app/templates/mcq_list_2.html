@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+{% block content %}
+<body> 
+	
+    <div id="questions">
+        <h3 id="theSubject"></h3>
+        <h4 id="question"></h4>
+
+
+
+        <div id="options">
+          <input type="radio" id="option1" value="1" name="mcqoptions" onclick="updateSelection(this)">
+          <label for="option1"></label><br>
+
+          <input type="radio" id="option2" value="2" name="mcqoptions" onclick="updateSelection(this)">
+          <label for="option2"></label><br>
+
+          <input type="radio" id="option3" value="3" name="mcqoptions" onclick="updateSelection(this)">
+          <label for="option3"></label><br>
+
+          <input type="radio" id="option4" value="4" name="mcqoptions" onclick="updateSelection(this)">
+          <label for="option4"></label><br>
+
+        </div>
+        
+
+        <button id="next">Next</button>
+
+    </div>
+    <div id="score_div">
+        <h4 id="score"></h4>
+    </div>
+    <div id="redirect">
+
+    </div>
+
+    <input type="text" id="countdownTextBox" readonly>
+
+    <form id="myForm">
+        {% csrf_token %}
+        <!-- Other form fields and content -->
+    </form>
+    
+
+
+</body> 
+</html> 
+<script> 
+
+	var data = JSON.parse("{{data|escapejs}}"); 
+    var subject = JSON.parse("{{subject|escapejs}}"); 
+    console.log(data);
+    console.log(subject);
+    const length = Object.keys(data).length;
+   
+    var count = 0;
+    var score = 0;
+    var flag = 0;
+    let lastSelectedRadio = null;
+    var quediv = document.getElementById('questions');
+    const scoreid = document.getElementById('score_div');
+
+    var subject_space = document.getElementById('theSubject');
+    var question_space = document.getElementById('question');
+    const next_button = document.getElementById('next');
+    const redirectDiv = document.getElementById('redirect');
+
+    const option1 = document.querySelector('label[for="option1"]');
+    const option2 = document.querySelector('label[for="option2"]');
+    const option3 = document.querySelector('label[for="option3"]');
+    const option4 = document.querySelector('label[for="option4"]');
+    const buttons = document.getElementsByName("mcqoptions");
+    
+
+    subject_space.innerHTML = subject[0].subject;
+ 
+
+    question_space.innerHTML = data[count].question;
+    option1.innerHTML  = data[count].options[0];
+    option2.innerHTML  = data[count].options[1];
+    option3.innerHTML  = data[count].options[2];
+    option4.innerHTML  = data[count].options[3];
+    
+
+    next_button.addEventListener('click', function() {
+
+        
+
+        console.log("next button fucked");
+        if(data[count].correct_answer == lastSelectedRadio.value) {
+                score++;
+            }
+            
+            console.log("score: ")
+            console.log(score);
+       
+        if(flag){
+            console.log("fuck")
+
+            quediv.style.display = "none";
+            scoreid.innerHTML = score;
+            sendDataToDjango(score);
+            createButton();
+
+        }
+
+        if(!flag){
+            
+            count++;
+            create_and_destroy_radio_buttons("mcqoptions",data[count].options[0],data[count].options[1],data[count].options[2],data[count].options[3]);
+            
+            question_space.innerHTML = data[count].question;
+            // option1.innerHTML  = data[count].options[0];
+            // option2.innerHTML  = data[count].options[1];
+            // option3.innerHTML  = data[count].options[2];
+            // option4.innerHTML  = data[count].options[3];
+            console.log("count:");
+            console.log(count);
+            
+            lastSelectedRadio.checked = false;
+            
+            if(count === length - 1){
+            flag = 1;
+            }
+
+        }
+
+        
+        
+        
+    
+    
+    });
+
+    
+
+function updateSelection(selectedRadio) {
+  if (lastSelectedRadio) {
+    lastSelectedRadio.checked = false;  // Unselect the previously selected radio button
+  }
+
+  lastSelectedRadio = selectedRadio;  // Update the last selected radio button
+}
+
+
+
+function sendDataToDjango(value) {
+    
+    console.log("here")
+    console.log(document.getElementsByName('csrfmiddlewaretoken')[0].value)
+  const csrfToken = document.getElementsByName('csrfmiddlewaretoken')[0].value;  // Get the CSRF token
+
+  const data = {
+    value: value,
+    subject:subject[0].subject,
+    csrfmiddlewaretoken: csrfToken
+  };
+  console.log("data")
+  console.log(data)
+
+
+  // Send a POST request to your Django view
+  fetch('/score-view/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken
+    },
+    body: JSON.stringify(data)
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    console.log(response);
+    return response.json();
+  })
+  .then(data => {
+    console.log('Response from Django:', data);
+  })
+  .catch(error => {
+    console.error('Error sending data to Django:', error);
+  });
+}
+
+function create_and_destroy_radio_buttons(name,a,b,c,d){
+    const container = document.getElementById('options');
+    const elements = document.querySelectorAll(`[name="${name}"]`);
+
+  elements.forEach(element => {
+    element.remove();
+  });
+
+  const brElements = container.querySelectorAll('br');
+
+  brElements.forEach(br => {
+    br.remove();
+  });
+
+
+  const brElement = document.createElement('br');
+  
+  
+  const labels = container.querySelectorAll('label');
+
+  labels.forEach(label => {
+    label.remove();
+  });
+
+  const radioButton1 = document.createElement('input');
+  radioButton1.type = 'radio';
+  radioButton1.id = 'option1';
+  radioButton1.value = '1';
+  radioButton1.name = 'mcqoptions';
+  radioButton1.onclick = function() {
+    updateSelection(this);
+  };
+
+  // Append the radio button to the specified container
+ 
+  container.appendChild(radioButton1);
+  const label1 = document.createElement('label');
+    label1.setAttribute('for', 'option1');
+    label1.innerHTML = a;
+  container.appendChild(label1);
+ 
+  container.appendChild(document.createElement('br'));
+
+
+
+  const radioButton2 = document.createElement('input');
+  radioButton2.type = 'radio';
+  radioButton2.id = 'option2';
+  radioButton2.value = '2';
+  radioButton2.name = 'mcqoptions';
+  radioButton2.onclick = function() {
+    updateSelection(this);
+  };
+
+  // Append the radio button to the specified container
+  
+  container.appendChild(radioButton2);
+  const label2 = document.createElement('label');
+    label2.setAttribute('for', 'option2');
+    label2.innerHTML = b;
+    container.appendChild(label2);
+    
+    container.appendChild(document.createElement('br'));
+
+  const radioButton3 = document.createElement('input');
+  radioButton3.type = 'radio';
+  radioButton3.id = 'option3';
+  radioButton3.value = '3';
+  radioButton3.name = 'mcqoptions';
+  radioButton3.onclick = function() {
+    updateSelection(this);
+  };
+
+  // Append the radio button to the specified container
+  
+  container.appendChild(radioButton3);
+  const label3 = document.createElement('label');
+    label3.setAttribute('for', 'option3');
+    console.log(c);
+    label3.innerHTML = c;
+    container.appendChild(label3);
+    container.appendChild(document.createElement('br'));
+    
+
+  const radioButton4 = document.createElement('input');
+  radioButton4.type = 'radio';
+  radioButton4.id = 'option4';
+  radioButton4.value = '4';
+  radioButton4.name = 'mcqoptions';
+  radioButton4.onclick = function() {
+    updateSelection(this);
+  };
+
+  // Append the radio button to the specified container
+  
+
+  container.appendChild(radioButton4);
+  const label4 = document.createElement('label');
+    label4.setAttribute('for', 'option4');
+    label4.innerHTML = d;
+    container.appendChild(label4);
+    container.appendChild(document.createElement('br'));
+}
+
+function createButton(){
+  const redirectButton = document.createElement('button');
+  redirectButton.innerHTML = "Go Home";
+  redirectDiv.appendChild(redirectButton);
+}
+
+
+//code for timer
+const countdownTimeInSeconds = 5;  
+let timeRemaining = countdownTimeInSeconds;
+// Function to update the timer display in the text box
+function updateTimer() {
+      const countdownTextBox = document.getElementById('countdownTextBox');
+      countdownTextBox.value = `Time remaining: ${timeRemaining} seconds`;
+
+      // Check if the timer has reached zero
+      if (timeRemaining <= 0) {
+        clearInterval(timerInterval);  // Stop the timer
+        countdownTextBox.value = 'Time is up!';
+      } else {
+        timeRemaining--;
+      }
+    }
+
+    // Update the timer every second
+    const timerInterval = setInterval(updateTimer, 1000);
+	
+</script>
+
+{% endblock %}

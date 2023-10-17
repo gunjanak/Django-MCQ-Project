@@ -2,7 +2,9 @@ from django.db import models
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
+from django.conf import settings
 
+from account.models import Profile
 
 
 
@@ -34,26 +36,15 @@ class MCQQuestion(models.Model):
     def __str__(self):
         return self.question_text
     
-# Create permissions
-# content_type = ContentType.objects.get_for_model(MCQQuestion)
-# create_permission = Permission.objects.create(
-#     codename='can_create_subject',
-#     name='Can Create Subject',
-#     content_type=content_type,
-# )
 
-# edit_permission = Permission.objects.create(
-#     codename='can_edit_subject',
-#     name='Can Edit Subject',
-#     content_type=content_type,
-# )
+class UserScore(models.Model):
+    """
+    Table to store user's score on each subject
+    """
+    
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+    subject = models.ForeignKey(Subject,on_delete=models.CASCADE)
+    score = models.IntegerField()
 
-# delete_permission = Permission.objects.create(
-#     codename='can_delete_subject',
-#     name='Can Delete Subject',
-#     content_type=content_type,
-# )
-
-# # Assign permissions to the "creators" group
-# creators_group.permissions.add(create_permission, edit_permission, delete_permission)
-
+   
+    

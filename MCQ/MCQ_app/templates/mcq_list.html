@@ -1,0 +1,186 @@
+<!DOCTYPE html> 
+<body> 
+	
+    <div id="questions">
+        <h3 id="theSubject"></h3>
+        <h4 id="question"></h4>
+
+
+
+        <div id="options">
+          <input type="checkbox" id="option1" value="1" name="mcqoptions" onclick="updateSelection(this)">
+          <label for="option1"></label><br>
+
+          <input type="checkbox" id="option2" value="2" name="mcqoptions" onclick="updateSelection(this)">
+          <label for="option2"></label><br>
+
+          <input type="checkbox" id="option3" value="3" name="mcqoptions" onclick="updateSelection(this)">
+          <label for="option3"></label><br>
+
+          <input type="checkbox" id="option4" value="4" name="mcqoptions" onclick="updateSelection(this)">
+          <label for="option4"></label><br>
+
+        </div>
+        
+
+        <button id="next">Next</button>
+
+    </div>
+    <div id="score_div">
+        <h4 id="score"></h4>
+    </div>
+    
+    <form id="myForm">
+        {% csrf_token %}
+        <!-- Other form fields and content -->
+    </form>
+    
+
+
+</body> 
+</html> 
+<script> 
+
+	var data = JSON.parse("{{data|escapejs}}"); 
+    var subject = JSON.parse("{{subject|escapejs}}"); 
+    console.log(data);
+    console.log(subject);
+    const length = Object.keys(data).length;
+   
+    var count = 0;
+    var score = 0;
+    var flag = 0;
+    let lastSelectedRadio = null;
+    var quediv = document.getElementById('questions');
+    const scoreid = document.getElementById('score_div');
+
+    var subject_space = document.getElementById('theSubject');
+    var question_space = document.getElementById('question');
+    const next_button = document.getElementById('next');
+    const option1 = document.querySelector('label[for="option1"]');
+    const option2 = document.querySelector('label[for="option2"]');
+    const option3 = document.querySelector('label[for="option3"]');
+    const option4 = document.querySelector('label[for="option4"]');
+    const buttons = document.getElementsByName("mcqoptions");
+    
+
+    subject_space.innerHTML = subject[0].subject;
+ 
+
+    question_space.innerHTML = data[count].question;
+    option1.innerHTML  = data[count].options[0];
+    option2.innerHTML  = data[count].options[1];
+    option3.innerHTML  = data[count].options[2];
+    option4.innerHTML  = data[count].options[3];
+    
+
+    next_button.addEventListener('click', function() {
+
+        console.log("next button fucked");
+        if(data[count].correct_answer == lastSelectedRadio.value) {
+                score++;
+            }
+            
+            console.log("score: ")
+            console.log(score);
+       
+        if(flag){
+            console.log("fuck")
+
+            quediv.style.display = "none";
+            scoreid.innerHTML = score;
+            sendDataToDjango(score);
+
+        }
+
+        if(!flag){
+             
+          // resetRadioButtons("mcqoptions");
+          //  buttons.setAttribute('checked',false);
+            count++;
+            question_space.innerHTML = data[count].question;
+            option1.innerHTML  = data[count].options[0];
+            option2.innerHTML  = data[count].options[1];
+            option3.innerHTML  = data[count].options[2];
+            option4.innerHTML  = data[count].options[3];
+            console.log("count:");
+            console.log(count);
+            
+            lastSelectedRadio.checked = false;
+            
+            if(count === length - 1){
+            flag = 1;
+            }
+
+        }
+
+        
+        
+        
+    
+    
+    });
+
+    
+
+function updateSelection(selectedRadio) {
+  if (lastSelectedRadio) {
+    lastSelectedRadio.checked = false;  // Unselect the previously selected radio button
+  }
+
+  lastSelectedRadio = selectedRadio;  // Update the last selected radio button
+}
+
+
+
+function sendDataToDjango(value) {
+    
+    console.log("here")
+    console.log(document.getElementsByName('csrfmiddlewaretoken')[0].value)
+  const csrfToken = document.getElementsByName('csrfmiddlewaretoken')[0].value;  // Get the CSRF token
+
+  const data = {
+    value: value,
+    subject:subject[0].subject,
+    csrfmiddlewaretoken: csrfToken
+  };
+  console.log("data")
+  console.log(data)
+
+
+  // Send a POST request to your Django view
+  fetch('/score-view/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken
+    },
+    body: JSON.stringify(data)
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    console.log(response);
+    return response.json();
+  })
+  .then(data => {
+    console.log('Response from Django:', data);
+  })
+  .catch(error => {
+    console.error('Error sending data to Django:', error);
+  });
+}
+
+function resetRadioButtons(groupName) {
+    const checkboxes = document.querySelectorAll(`input[name="${groupName}"]`);
+    console.log("Resetting radio buttons");
+    checkboxes.forEach(checkbox => {
+        console.log("Resetting all the buttons");
+        checkbox.checked = false;
+    });
+}
+
+
+	
+</script>

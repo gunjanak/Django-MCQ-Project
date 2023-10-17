@@ -132,7 +132,7 @@ MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 LOGIN_REDIRECT_URL = 'MCQ_app:subject_list'
-LOGIN_URL = 'login'
-LOGOUT_URL = 'logout'
+LOGIN_URL = 'account:login'
+LOGOUT_URL = 'account:logout'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

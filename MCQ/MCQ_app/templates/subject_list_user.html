@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title%}
+<head>
+    <title>Subject List</title>
+</head>
+{% endblock %}
+
+{% block content %}
+<body>
+    <h1>TEST</h1>
+    <ul>
+        {% for item in subject_list %}
+            <li>{{ item.id }} - {{ item.name }}
+                <a href="{% url 'MCQ_app:mcq_list' item.id %}">Take a Test</a>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+{% endblock %}
